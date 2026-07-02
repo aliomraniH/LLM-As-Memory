@@ -142,3 +142,19 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
     arms** under 0.1.5: `orch_bare` (A1, `claude-fable-5`) reps 1-5 and `edge_bare` (A3,
     `claude-opus-4-8`) reps 1-5 — superseding the pre-0.1.5 T02 records (A3's incomplete 3/5 set
     and the manually-recovered A1 rep 1). T01 and T09 records (0.1.4) are unaffected and retained.
+13. **Second latent defect exposed by #12's isError fix: `artifact_put` was never uploading
+    (harness 0.1.5 → 0.1.6).** The harness called `artifact_put` with `{"data": blob}`, but the
+    spine tool's argument is `content_base64` (and it takes no `event_id`). Before #12 this errored
+    silently — `call()` returned the error text, `isinstance(res, dict)` was False, so
+    `output_artifact_sha256` was recorded `null` on *every* run to date (all arms/tasks). Once
+    `call()` began raising on `isError`, that failure surfaced: the run's raw output blob was never
+    stored, and the `except` branch journaled a permanently-invalid `artifact_put` replay entry
+    (wrong arg + non-uuid `event_id`) that tripped the exit-3 replay gate. Fix: call
+    `artifact_put` with `content_base64`, read `sha256` from the result, and make the spine-down
+    fallback best-effort (record the local content sha256 — identical to the server's address, blob
+    kept on disk at `out_path` — and do NOT journal it, since artifact upload is supplementary
+    provenance and must not gate the run-record's acknowledgement). Verified: `artifact_put` now
+    returns a sha256 and `artifact_get` retrieves the blob. Consequence for the T02 re-collection:
+    `output_artifact_sha256` is now a real, retrievable content address for both re-run T02 arms
+    (parity preserved between the compared A1/A3 T02 cells); the retained T01/T09 0.1.4 records keep
+    their historical `null` (provenance-only field, not a scored metric).

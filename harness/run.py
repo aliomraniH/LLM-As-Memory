@@ -10,7 +10,7 @@ import jsonschema, yaml
 from spine_client import SpineClient, SpineUnavailable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-HARNESS_VERSION = "0.1.5"
+HARNESS_VERSION = "0.1.6"
 NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
@@ -146,11 +146,17 @@ def main() -> int:
         import base64
         blob = base64.b64encode(raw.encode()).decode()
         try:
-            res = client.call("artifact_put", {"data": blob})
-            artifact_sha = (res or {}).get("sha256") if isinstance(res, dict) else None
+            # artifact_put's arg is `content_base64` (not `data`) and it takes no event_id;
+            # the old `{"data": blob}` call silently errored (output_artifact_sha256 was always
+            # null) until call() began surfacing isError.
+            res = client.call("artifact_put", {"content_base64": blob})
+            artifact_sha = res.get("sha256") if isinstance(res, dict) else None
         except SpineUnavailable:
-            artifact_sha = hashlib.sha256(raw.encode()).hexdigest()  # local hash; upload on replay
-            client.journal("artifact_put", {"data": blob, "event_id": run_id + "-artifact"})
+            # spine down: record the content address (sha256 of the raw output, which the server
+            # computes identically) — the blob stays on disk at out_path and is re-uploadable.
+            # artifact upload is best-effort provenance and must not gate the run-record's ack,
+            # so it is deliberately not journaled for mandatory replay.
+            artifact_sha = hashlib.sha256(raw.encode()).hexdigest()
 
     scores = {}
     if status == "completed":
