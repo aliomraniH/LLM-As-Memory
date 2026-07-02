@@ -5,7 +5,7 @@ repo: aliomraniH/LLM-As-Memory
 models:
   orchestrator: "RECORD_PER_BATCH"     # record exact frontier model string per batch (context.json)
   edge: "claude-opus-4-8"
-  referee: "TODO-pin-snapshot"          # harness refuses referee cells until a dated gpt-5.5 snapshot is pinned
+  referee: "gpt-5.5-2026-04-23"         # dated gpt-5.5 snapshot pinned (mirrors settings/openai_referee.env)
   agreement_judge: "TODO-pin-snapshot"  # third-family frontier, pinned
 
 arms: [orch_bare, orch_skill, edge_bare, edge_skill]
