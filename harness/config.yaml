@@ -3,7 +3,7 @@ namespace: dev/skill-transfer
 repo: aliomraniH/LLM-As-Memory
 
 models:
-  orchestrator: "RECORD_PER_BATCH"     # record exact frontier model string per batch (context.json)
+  orchestrator: "claude-fable-5"       # per-batch pin (A1 orch_bare); confirmed via `claude -p ... --model claude-fable-5`
   edge: "claude-opus-4-8"
   referee: "gpt-5.5-2026-04-23"         # dated gpt-5.5 snapshot pinned (mirrors settings/openai_referee.env)
   agreement_judge: "TODO-pin-snapshot"  # third-family frontier, pinned

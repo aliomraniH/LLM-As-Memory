@@ -101,3 +101,14 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
    - **`field_accuracy` is T01's discriminating metric.** It rewards matching the flat field
      naming/values the conventions skill *can* legitimately teach from A1 traces. `schema_valid` is
      retained for completeness but read as ≈ 0 everywhere by design, not as a transfer signal.
+10. **A1 (`orch_bare`) executes headless through the edge launch path (harness 0.1.3 → 0.1.4).**
+    A1 is now driven by `harness/run.py` via `claude -p` through the *same* `launch_edge` path as
+    the A3 edge arm — same wrapper, same `--allowedTools Read,Write`, same `--max-turns`, same
+    deterministic graders, same run-record assembly — with the arm resolving *only* the `--model`
+    flag: `edge_*` → `models.edge` (`claude-opus-4-8`), `orch_*` → `models.orchestrator`. So A1 and
+    A3 differ by exactly one variable, the orchestrator vs. edge model string. This **supersedes the
+    manual web-paste recipe in `bootstrap/EDGE_CLI_RUNBOOK.md §5`** for A1. The orchestrator is
+    pinned for this batch to **`claude-fable-5`** (confirmed by probing `claude -p "…" --model
+    claude-fable-5 --output-format json`), so the existing model-mismatch abort now protects orch
+    runs too. `scripts/make_orch_prompt.py` is retained as the web-surface contingency (blind
+    fixture-content inlining) should headless execution be unavailable.

@@ -10,7 +10,7 @@ import jsonschema, yaml
 from spine_client import SpineClient, SpineUnavailable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-HARNESS_VERSION = "0.1.3"
+HARNESS_VERSION = "0.1.4"
 NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
@@ -58,8 +58,11 @@ def freshness_gate(client: SpineClient, cfg: dict, hashes: dict) -> str:
 
 
 def launch_edge(cfg: dict, task: dict, task_dir: pathlib.Path, out_path: pathlib.Path,
-                skill_arm: bool, run_id: str) -> tuple[str, str]:
-    """Launch headless Claude Code. Returns (raw_output, model_id_observed)."""
+                skill_arm: bool, run_id: str, model: str) -> tuple[str, str]:
+    """Launch headless Claude Code. Returns (raw_output, model_id_observed).
+
+    `model` is resolved by arm in main() (edge_* -> models.edge, orch_* -> models.orchestrator);
+    the rest of the launch path is arm-invariant so orch/edge differ only in --model."""
     prompt_tpl = (ROOT / "prompts" / "arm_runner.md").read_text()
     # grading keys are never model inputs
     fixtures = "\n".join(str(p) for p in sorted((task_dir / "fixtures").glob("*"))
@@ -72,7 +75,6 @@ def launch_edge(cfg: dict, task: dict, task_dir: pathlib.Path, out_path: pathlib
               .replace("{max_output_tokens}", str(task["max_output_tokens"])))
     env = dict(**__import__("os").environ, SKILL_ARM="1" if skill_arm else "0",
                CLAUDE_PROJECT_DIR=str(ROOT))
-    model = cfg["models"]["edge"]
     proc = subprocess.run(
         ["claude", "-p", prompt, "--model", model, "--output-format", "json",
          "--allowedTools", "Read,Write", "--max-turns", "30"],
@@ -104,9 +106,8 @@ def main() -> int:
     skill_arm = args.arm.endswith("_skill")
     started = NOW()
 
-    if args.arm.startswith("orch_"):
-        sys.exit("orchestrator arms run on Claude web / Claude Code Web — record manually or "
-                 "extend launch_orch(); this runner drives edge arms.")
+    # arm -> model resolution (orch_* run headless through the same launch path as edge_*)
+    pinned = cfg["models"]["orchestrator"] if args.arm.startswith("orch_") else cfg["models"]["edge"]
 
     # step 1-2: arm resolution + freshness gate
     hashes = skill_tree_hashes(task.get("skills_in_scope", [])) if skill_arm else {}
@@ -133,9 +134,8 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     raw, observed = launch_edge(cfg, task, task_dir if args.task != "T09"
                                 else (ROOT / ".runs" / "instances" / run_id), out_path,
-                                skill_arm, run_id)
+                                skill_arm, run_id, pinned)
 
-    pinned = cfg["models"]["edge"]
     status = "completed"
     if observed != pinned:
         status = "aborted_model_mismatch"
