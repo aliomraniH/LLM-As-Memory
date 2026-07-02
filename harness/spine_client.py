@@ -10,10 +10,24 @@
 Known failure modes (SPINE.md): -32600 "Session terminated" => wake/restart the Replit instance;
 "No approval received" is a client-side Claude Code approval gate, not a server problem.
 """
-import json, pathlib, time, urllib.request, uuid
+import json, os, pathlib, time, urllib.error, urllib.request, uuid
 
 ENDPOINT = "https://mcp-assist-memory.replit.app/mcp"
 JOURNAL = pathlib.Path(".runs/journal.ndjson")
+ENV_FILE = pathlib.Path("settings/spine.env")
+
+
+def _auth_token():
+    """SPINE_AUTH_TOKEN from the environment, else from settings/spine.env (gitignored)."""
+    tok = os.environ.get("SPINE_AUTH_TOKEN")
+    if tok:
+        return tok
+    if ENV_FILE.exists():
+        for line in ENV_FILE.read_text().splitlines():
+            line = line.strip()
+            if line.startswith("SPINE_AUTH_TOKEN="):
+                return line.split("=", 1)[1].strip().strip("'\"") or None
+    return None
 
 
 class SpineUnavailable(Exception):
@@ -24,6 +38,7 @@ class SpineClient:
     def __init__(self, endpoint: str = ENDPOINT):
         self.endpoint = endpoint
         self._session_id = None
+        self._auth_token = _auth_token()
 
     # --- transport -------------------------------------------------------
     def _post(self, payload: dict) -> dict:
@@ -31,6 +46,7 @@ class SpineClient:
             self.endpoint, data=json.dumps(payload).encode(),
             headers={"Content-Type": "application/json",
                      "Accept": "application/json, text/event-stream",
+                     **({"Authorization": f"Bearer {self._auth_token}"} if self._auth_token else {}),
                      **({"Mcp-Session-Id": self._session_id} if self._session_id else {})})
         try:
             with urllib.request.urlopen(req, timeout=30) as r:
@@ -38,6 +54,12 @@ class SpineClient:
                 if sid:
                     self._session_id = sid
                 body = r.read().decode()
+        except urllib.error.HTTPError as e:
+            if e.code == 401:
+                raise SpineUnavailable(
+                    "HTTP 401 Unauthorized — the spine requires auth; set SPINE_AUTH_TOKEN "
+                    "(env var, or settings/spine.env from settings/spine.env.example)") from e
+            raise SpineUnavailable(str(e)) from e
         except Exception as e:  # DNS, TLS, 5xx, timeout
             raise SpineUnavailable(str(e)) from e
         # streamable HTTP may answer as SSE

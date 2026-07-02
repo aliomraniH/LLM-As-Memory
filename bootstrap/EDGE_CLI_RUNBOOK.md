@@ -55,7 +55,10 @@ python3 scripts/leakage_audit.py && echo "leakage audit clean"
 
 If the spine call fails: `-32600 Session terminated` → open the Replit instance to wake it,
 retry; `No approval received` → your local allow rules, check `.claude/settings.json` is the
-one from this repo. Journaled writes replay automatically on the next run.
+one from this repo; `HTTP 401 Unauthorized` → the server requires auth: copy
+`settings/spine.env.example` to `settings/spine.env`, set `SPINE_AUTH_TOKEN`, and re-add the
+connector with `--header "Authorization: Bearer <token>"`. Journaled writes replay
+automatically on the next run.
 
 ## 3. Interactive session bootstrap (paste into `claude` in the repo root)
 
