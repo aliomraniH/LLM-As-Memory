@@ -13,6 +13,9 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
 2. **Branch protection** on `main` could not be enabled from the setup surface (no GitHub
    credentials in the sandbox). Enable it from the GitHub UI after first push; until then, treat
    force-pushes to main as a validity event.
+   Outcome (2026-07-02, push surface): still not enabled — the push surface has no `gh` CLI and
+   no branch-protection API access; operator must enable it in the GitHub UI (Settings →
+   Branches → protect `main`, block force pushes and deletions).
 3. **Push deferred.** Phase 0/1 commits were made in a sandboxed clone without push credentials.
    The operator pushes from a credentialed machine (commands in HANDOFF.md). Commit SHAs are
    preserved by pushing this clone's history as-is; the T02 fixture and spine seed records
