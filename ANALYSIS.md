@@ -82,3 +82,22 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
    *contents* inlined — applies the same exclusion (plus `instance.json` for T09). **T01
    `edge_bare` reps 1–5 re-run under 0.1.3.** T02 (`context.md` only) and T09 (generated
    `fixtures/problem.md` only) never exposed grading material; their 0.1.2 records stand.
+9. **T01 edge_bare floor is a genuine 0.0/0.0 (harness 0.1.3) — and `schema_valid` is
+   structurally unreachable.** With the answer key excluded, the bare model produces well-formed,
+   sensible intake JSON but in *its own* nested convention (`patient: {last_name, first_name}`,
+   `referring_provider: {…}`, `referral_reason: {…}` with a standard ICD-10 code like `I10`), while
+   the graders demand the local *flat* convention (`patient_name`, `referring_provider` as a string,
+   `referral_reason_code`) and a local reason-code enum (`HTN-UNCTRL`, …). Both live only in grader
+   material (`intake.schema.json` / `expected.json`), so all five reps score `schema_valid 0.0` and
+   `field_accuracy 0.0` — a real measurement (validate.py runs and returns 0.0 on
+   "Additional properties are not allowed"), not an artifact. This is the correct uninflated
+   high-transfer floor; the 0.1.2 1.0s were answer-key leakage.
+   - **`schema_valid` is unreachable for every *compliant* arm, by construction.** The reason-code
+     enum exists only in `intake.schema.json`/`expected.json`, and the distillation protocol
+     (EXPERIMENT.md §3, `prompts/skill_distillation.md`) lets the skill author see only its own
+     successful **A1** traces — never grader material — so no compliant skill can carry the codes,
+     and no compliant arm can satisfy the enum. `schema_valid` is therefore expected ≈ 0 in **all**
+     arms (bare and skill alike) and cannot discriminate transfer.
+   - **`field_accuracy` is T01's discriminating metric.** It rewards matching the flat field
+     naming/values the conventions skill *can* legitimately teach from A1 traces. `schema_valid` is
+     retained for completeness but read as ≈ 0 everywhere by design, not as a transfer signal.
