@@ -17,18 +17,15 @@ line-ending rewrite invalidates them. Publish the history exactly as it exists.
 
 1. If you have `LLM-As-Memory-bootstrapped.zip`, unzip it preserving everything
    (`unzip -q LLM-As-Memory-bootstrapped.zip`). Work inside `LLM-As-Memory/`.
-2. Verify the history is intact — all three checks must pass before you touch the network:
+2. Verify the history is intact — all checks must pass before you touch the network. The head
+   commit may sit above these (e.g. this runbook's own commit); what is load-bearing is that
+   these three SHAs exist unmodified in the ancestry of `main`:
    ```bash
    cd LLM-As-Memory
-   git log --format='%H %s'
-   ```
-   Expected, exactly:
-   ```
-   3315f3b278371d408dda29931d71e332f79915c8 phase-3: handoff
-   150888ecc8f71ddc6ce418402a6964c9187f4508 phase-1: executable harness
-   0a05846beb85a91fe5bf3c0acde275c951e73d79 pre-registration: experiment design v1
-   ```
-   ```bash
+   git merge-base --is-ancestor 0a05846beb85a91fe5bf3c0acde275c951e73d79 main && echo prereg-OK
+   git merge-base --is-ancestor 150888ecc8f71ddc6ce418402a6964c9187f4508 main && echo phase1-OK
+   git merge-base --is-ancestor 3315f3b278371d408dda29931d71e332f79915c8 main && echo phase3-OK
+   git show -s --format='%s' 0a05846beb85a91fe5bf3c0acde275c951e73d79   # "pre-registration: experiment design v1"
    git status --porcelain        # must be empty (no uncommitted changes)
    git fsck --no-dangling        # must report no errors
    ```
@@ -44,7 +41,7 @@ git push -u origin main
   STOP and report what's there — never force-push, never pull-merge into this history.
 - After pushing, confirm the remote head matches:
   ```bash
-  git ls-remote origin refs/heads/main   # must print 3315f3b278371d408dda29931d71e332f79915c8
+  git ls-remote origin refs/heads/main   # must equal your local `git rev-parse main`
   ```
 
 ## Step 3 — Branch protection (ANALYSIS.md deviation #2)
@@ -78,5 +75,5 @@ verification is deferred to the local machine (it is step 2 of `bootstrap/EDGE_C
 
 ## Step 5 — Report
 
-End with: pushed head SHA, whether it matches `3315f3b2…`, branch-protection outcome,
+End with: pushed head SHA, confirmation that all three ancestry checks passed, branch-protection outcome,
 reconcile verdict (or "deferred"), and any new commits you added.
