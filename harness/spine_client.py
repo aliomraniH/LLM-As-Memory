@@ -95,6 +95,12 @@ class SpineClient:
                 raise SpineUnavailable("-32600 Session terminated (wake/restart Replit, then replay)")
             raise SpineUnavailable(json.dumps(resp["error"]))
         result = resp.get("result", {})
+        # A tool-level failure (isError) must not be returned as if it were data: doing so let
+        # write_with_journal mark a dropped write "acked". Surface it so the write stays pending.
+        if isinstance(result, dict) and result.get("isError"):
+            msg = next((c.get("text", "") for c in (result.get("content") or [])
+                        if c.get("type") == "text"), "")
+            raise SpineUnavailable(f"tool error: {msg[:300]}")
         content = result.get("content") or []
         for c in content:
             if c.get("type") == "text":

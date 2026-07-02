@@ -112,3 +112,33 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
     claude-fable-5 --output-format json`), so the existing model-mismatch abort now protects orch
     runs too. `scripts/make_orch_prompt.py` is retained as the web-surface contingency (blind
     fixture-content inlining) should headless execution be unavailable.
+11. **T02 run-records are silently dropped by a spine event_id collision (harness defect, surfaced
+    during the A1 `orch_bare` batch; harness 0.1.4).** `run.py` writes its run-record with
+    `event_id = run_id`. T02 is the only task whose *measured* model itself writes to the spine
+    (it records the pre-registration claim to `dev/skill-transfer-tasks` via `MCP_Assist`), and the
+    `mcp-assist-memory` skill leads the model to use the handed-in `run_id` as *its* write's
+    `event_id`. The spine enforces **global** event_id idempotency, so the model's in-run write
+    consumes `event_id=<run_id>` first and the harness's post-run `memory_save` is deduped to the
+    model's record and never stored. Compounding this, `SpineClient.call()` does **not** inspect
+    the tool response's `isError`, so `write_with_journal` marks the journal `acked` and `run.py`
+    exits 0 — a *phantom* acknowledgement (the expected exit-3 replay warning never fires).
+    Evidence: `memory_history run/T02/orch_bare/1` is empty; re-saving the exact journaled record
+    with `event_id==run_id` returns the model's `task-t02/prereg-commit/<run_id>` claim, while
+    re-saving with a fresh uuid4 persists it (revision 1). Confirmed for all 5 T02 `orch_bare`
+    reps; the same class of failure already hit the pre-registered **A3 `edge_bare` T02** set
+    (only reps 1,2,4 persisted). **Consequence:** T02 `orch_bare` reps 2-5 have no acknowledged
+    spine record and are INVALID per SPINE.md; rep 1 was manually recovered during diagnosis with
+    a fresh event_id (a deviation from the pinned path, flagged for re-run). T01 (5/5) and T09
+    (10/10) are unaffected and valid. **Decision pending (experiment owner):** whether to patch the
+    harness (distinct valid-uuid event_id for the run-record + surface `isError` on writes; bump
+    HARNESS_VERSION) and re-run T02 for A1 — and whether A3's T02 set must be re-collected for
+    parity. No further harness change or re-run made until sanctioned.
+12. **Resolution of #11 (harness 0.1.4 → 0.1.5).** Two fail-closed fixes: (a) `run.py` now writes
+    its run-record under `event_id = uuid5(NAMESPACE_URL, "run-record:"+run_id)` — a valid,
+    collision-free, replay-stable token distinct from the `run_id` the measured model reuses for
+    its own spine writes; (b) `SpineClient.call()` raises `SpineUnavailable` on a tool response with
+    `isError`, so a rejected/deduped write can no longer be marked `acked` (it stays pending and
+    trips the exit-3 replay warning). Per the owner's decision, **T02 is re-collected for BOTH
+    arms** under 0.1.5: `orch_bare` (A1, `claude-fable-5`) reps 1-5 and `edge_bare` (A3,
+    `claude-opus-4-8`) reps 1-5 — superseding the pre-0.1.5 T02 records (A3's incomplete 3/5 set
+    and the manually-recovered A1 rep 1). T01 and T09 records (0.1.4) are unaffected and retained.

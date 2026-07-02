@@ -10,7 +10,7 @@ import jsonschema, yaml
 from spine_client import SpineClient, SpineUnavailable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-HARNESS_VERSION = "0.1.4"
+HARNESS_VERSION = "0.1.5"
 NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
@@ -197,9 +197,14 @@ def main() -> int:
     ns = cfg["namespace"]
     head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
                           text=True, check=True).stdout.strip()
+    # The run-record's idempotency token must be distinct from run_id: the measured model itself
+    # writes to the spine in MCP tasks (e.g. T02) reusing run_id as ITS event_id, and the spine's
+    # event_id idempotency is global — a shared token silently deduped the harness record away.
+    # A deterministic uuid5(run_id) is valid-uuid, collision-free, and stable for exactly-once replay.
+    record_event_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"run-record:{run_id}"))
     client.write_with_journal("memory_save", {
         "namespace": ns, "key": f"run/{task['task_id']}/{args.arm}/{args.rep}",
-        "kind": "claim", "value": json.dumps(record), "event_id": run_id,
+        "kind": "claim", "value": json.dumps(record), "event_id": record_event_id,
         "source_surface": "claude-code-local",
         "meta": {"repo": cfg["repo"], "branch": "main", "repo_sha": head},
     })
