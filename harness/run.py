@@ -156,6 +156,8 @@ def main() -> int:
             if instance_path:
                 cmd = cmd.replace("{instance_path}", str(instance_path))
             parts = cmd.split()
+            if parts and parts[0] == "python":  # grader cmds say "python"; use this interpreter
+                parts[0] = sys.executable
             r = subprocess.run(parts, cwd=task_dir, capture_output=True, text=True)
             try:
                 scores[g["name"]] = float(r.stdout.strip().splitlines()[-1])
