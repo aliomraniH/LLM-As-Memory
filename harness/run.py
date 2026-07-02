@@ -10,7 +10,7 @@ import jsonschema, yaml
 from spine_client import SpineClient, SpineUnavailable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-HARNESS_VERSION = "0.1.0"
+HARNESS_VERSION = "0.1.1"
 NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
@@ -72,7 +72,7 @@ def launch_edge(cfg: dict, task: dict, task_dir: pathlib.Path, out_path: pathlib
     model = cfg["models"]["edge"]
     proc = subprocess.run(
         ["claude", "-p", prompt, "--model", model, "--output-format", "json",
-         "--max-turns", "30"],
+         "--allowedTools", "Read,Write", "--max-turns", "30"],
         cwd=ROOT, env=env, capture_output=True, text=True, timeout=1800)
     observed = model
     try:
