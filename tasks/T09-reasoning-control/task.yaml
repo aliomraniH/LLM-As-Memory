@@ -1,0 +1,18 @@
+task_id: T09
+version: "1.0"
+title: Novel constraint-satisfaction reasoning (control — no stable procedure exists)
+category: reasoning-control
+expected_transfer: none
+prompt: |
+  Solve the scheduling constraint problem in fixtures/problem.md. Instances are generated fresh
+  per rep (see graders/generate.py) so no fixed answer set exists to encode in text.
+skills_in_scope: []          # deliberately no helpful skill; *_skill arms still load the full
+                             # library to test for interference from irrelevant skills
+tools_in_scope: []
+deterministic_graders:
+  - name: solution_valid
+    cmd: "python graders/verify.py {output_path} {instance_path}"
+referee_dimensions: []
+reps: 10                     # controls need tighter CIs
+max_output_tokens: 6000
+leakage_forbidden_strings: []

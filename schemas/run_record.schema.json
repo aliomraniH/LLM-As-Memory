@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aliomraniH/skill-transfer-experiment/schemas/run_record.schema.json",
+  "title": "SkillTransferRunRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id", "task_id", "task_version", "arm", "rep",
+    "model_id_pinned", "model_id_observed",
+    "skill_tree", "harness_version", "started_at", "finished_at",
+    "status", "output_artifact_sha256", "scores", "compliance"
+  ],
+  "properties": {
+    "run_id": { "type": "string", "format": "uuid", "description": "Doubles as spine event_id" },
+    "task_id": { "type": "string", "pattern": "^T[0-9]{2}[a-z0-9-]*$" },
+    "task_version": { "type": "string" },
+    "arm": { "enum": ["orch_bare", "orch_skill", "edge_bare", "edge_skill"] },
+    "rep": { "type": "integer", "minimum": 1 },
+    "model_id_pinned": { "type": "string", "description": "Model requested in harness config" },
+    "model_id_observed": { "type": "string", "description": "Model reported by API response; mismatch with pinned aborts the run" },
+    "skill_tree": {
+      "type": "object",
+      "description": "Empty object for bare arms",
+      "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    },
+    "repo_sha": { "type": "string", "description": "Git commit the edge synced from; required for *_skill arms" },
+    "harness_version": { "type": "string" },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["completed", "aborted_model_mismatch", "aborted_stale_skills", "error"] },
+    "output_artifact_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "MCP_Assist artifact hash of the full run output; null only when status != completed"
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["deterministic"],
+      "properties": {
+        "deterministic": {
+          "type": "object",
+          "additionalProperties": { "type": "number" },
+          "description": "Grader name -> numeric score; empty object if task has no deterministic tier"
+        },
+        "referee": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["referee_model", "rubric_sha256", "score", "swapped_score", "verdict_artifact_sha256"],
+          "properties": {
+            "referee_model": { "type": "string" },
+            "rubric_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+            "score": { "type": "number" },
+            "swapped_score": { "type": "number", "description": "Score from the position-swapped judgment" },
+            "position_consistent": { "type": "boolean" },
+            "second_judge_score": { "type": ["number", "null"], "description": "Agreement-sample second family judge, if drawn" },
+            "verdict_artifact_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["skill_steps_total", "skill_steps_executed", "hook_gate_triggers"],
+      "properties": {
+        "skill_steps_total": { "type": "integer", "minimum": 0, "description": "Mandatory steps declared by the skill; 0 for bare arms" },
+        "skill_steps_executed": { "type": "integer", "minimum": 0 },
+        "hook_gate_triggers": { "type": "integer", "minimum": 0, "description": "Times a deterministic hook had to block/redirect" }
+      }
+    },
+    "notes": { "type": "string", "maxLength": 2000 }
+  }
+}

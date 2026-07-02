@@ -1,0 +1,24 @@
+experiment: skill-transfer-v1
+namespace: dev/skill-transfer
+repo: aliomraniH/LLM-As-Memory
+
+models:
+  orchestrator: "<record exact frontier model string per batch>"
+  edge: "claude-opus-4-8"
+  referee: "gpt-5.5-<dated snapshot>"        # never a floating alias
+  agreement_judge: "<third-family frontier, pinned>"
+
+arms: [orch_bare, orch_skill, edge_bare, edge_skill]
+
+referee:
+  temperature: 0
+  agreement_sample_rate: 0.20
+  kappa_floor: 0.4
+
+spine:
+  journal_path: .runs/journal.ndjson
+  replay_max_attempts: 10
+  replay_backoff_seconds: 30
+
+budget:
+  max_total_runs: 200        # tasks x arms x reps ceiling; compute cost before raising

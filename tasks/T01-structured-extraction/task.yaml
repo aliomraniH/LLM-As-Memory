@@ -1,0 +1,22 @@
+task_id: T01
+version: "1.0"
+title: Structured extraction from synthetic referral documents with domain conventions
+category: procedural
+expected_transfer: high
+prompt: |
+  You are given three synthetic referral documents in fixtures/. Extract a structured intake
+  record for each into a single JSON array. Follow standard intake conventions for field naming,
+  date normalization (ISO 8601), medication representation (name, dose value, dose unit, route as
+  separate fields), and referral-reason coding. Output JSON only.
+skills_in_scope:
+  - intake-extraction-conventions
+tools_in_scope: []
+deterministic_graders:
+  - name: schema_valid
+    cmd: "python graders/validate.py {output_path}"
+  - name: field_accuracy
+    cmd: "python graders/match.py {output_path} fixtures/expected.json"
+referee_dimensions: []
+reps: 5
+max_output_tokens: 4000
+leakage_forbidden_strings: []   # populate from fixtures/expected.json values before first run

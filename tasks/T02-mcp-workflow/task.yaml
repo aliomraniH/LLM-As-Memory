@@ -1,0 +1,20 @@
+task_id: T02
+version: "1.0"
+title: Record a verifiable claim with provenance and confirm it reconciles current
+category: procedural
+expected_transfer: high
+prompt: |
+  A fix for issue #<N> was merged to main in repo <REPO> (details in fixtures/context.md).
+  Durably record this fact in namespace dev/skill-transfer-tasks such that it is
+  machine-verifiable, then verify it and report the verification verdict.
+skills_in_scope:
+  - mcp-assist-memory        # the existing production skill, verbatim
+tools_in_scope:
+  - MCP_Assist
+deterministic_graders:
+  - name: postcondition
+    cmd: "python graders/check_spine.py"   # reads back: kind=claim, meta has repo+pr+sha, reconcile verdict current
+referee_dimensions: []
+reps: 5
+max_output_tokens: 3000
+leakage_forbidden_strings: []

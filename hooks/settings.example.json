@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__MCP_Assist__memory_save",
+      "mcp__MCP_Assist__memory_get",
+      "mcp__MCP_Assist__memory_list",
+      "mcp__MCP_Assist__coord_health",
+      "mcp__MCP_Assist__coord_reconcile",
+      "mcp__MCP_Assist__artifact_put",
+      "mcp__MCP_Assist__artifact_get",
+      "mcp__MCP_Assist__session_create",
+      "mcp__MCP_Assist__session_append_event"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "bash .claude/hooks/freshness_gate.sh" } ] }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "mcp__MCP_Assist__memory_save",
+        "hooks": [ { "type": "command", "command": "python .claude/hooks/namespace_guard.py" } ]
+      }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command", "command": "python .claude/hooks/compliance_counter.py" } ] }
+    ]
+  }
+}

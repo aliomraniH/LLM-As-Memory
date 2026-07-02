@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/aliomraniH/skill-transfer-experiment/referee/referee_output.schema.json",
+  "title": "RefereeJudgment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rubric_version", "scores_a", "scores_b", "preference", "rationale"],
+  "properties": {
+    "rubric_version": { "type": "string" },
+    "scores_a": { "$ref": "#/$defs/dimscores" },
+    "scores_b": { "$ref": "#/$defs/dimscores" },
+    "preference": { "enum": ["A", "B", "tie"] },
+    "rationale": {
+      "type": "string",
+      "minLength": 40,
+      "maxLength": 1200,
+      "description": "Rubric-grounded justification; must reference dimensions, not style"
+    }
+  },
+  "$defs": {
+    "dimscores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["correctness", "completeness", "procedural_soundness", "spec_conformance"],
+      "properties": {
+        "correctness": { "type": "number", "minimum": 0, "maximum": 10 },
+        "completeness": { "type": "number", "minimum": 0, "maximum": 10 },
+        "procedural_soundness": { "type": "number", "minimum": 0, "maximum": 10 },
+        "spec_conformance": { "type": "number", "minimum": 0, "maximum": 10 }
+      }
+    }
+  }
+}
