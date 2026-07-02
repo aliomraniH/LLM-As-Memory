@@ -10,7 +10,7 @@ import jsonschema, yaml
 from spine_client import SpineClient, SpineUnavailable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-HARNESS_VERSION = "0.1.2"
+HARNESS_VERSION = "0.1.3"
 NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
@@ -61,7 +61,9 @@ def launch_edge(cfg: dict, task: dict, task_dir: pathlib.Path, out_path: pathlib
                 skill_arm: bool, run_id: str) -> tuple[str, str]:
     """Launch headless Claude Code. Returns (raw_output, model_id_observed)."""
     prompt_tpl = (ROOT / "prompts" / "arm_runner.md").read_text()
-    fixtures = "\n".join(str(p) for p in sorted((task_dir / "fixtures").glob("*")) if p.is_file()) \
+    # grading keys are never model inputs
+    fixtures = "\n".join(str(p) for p in sorted((task_dir / "fixtures").glob("*"))
+                         if p.is_file() and p.name != "expected.json") \
         if (task_dir / "fixtures").exists() else "(generated per rep — see problem.md path above)"
     prompt = (prompt_tpl.replace("{task_prompt}", task["prompt"])
               .replace("{fixture_paths}", fixtures)

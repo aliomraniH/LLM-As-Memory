@@ -72,3 +72,13 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
      under harness **0.1.2** for a homogeneous baseline, superseding every 0.1.0/0.1.1 record
      (including the 0.1.2 T01 rep-1 smoke run produced on a dirty tree); the spine's append-only
      history preserves the superseded records.
+8. **T01 answer key listed as model input (harness 0.1.2 → 0.1.3).** `launch_edge` listed every
+   file in the task's `fixtures/` dir as an input path, and T01's `fixtures/` contains
+   `expected.json` — the very key `match.py` grades against — while the model holds `Read`
+   permission. The five 0.1.2 T01 `edge_bare` 1.0s are therefore unverifiable (the wrapper itself
+   sanctioned reading the key) and are superseded. Fix: the fixture listing now excludes
+   `expected.json` (grading keys are never model inputs; harness **0.1.3**), and the new
+   `scripts/make_orch_prompt.py` — which assembles the blind orchestrator-arm wrapper with fixture
+   *contents* inlined — applies the same exclusion (plus `instance.json` for T09). **T01
+   `edge_bare` reps 1–5 re-run under 0.1.3.** T02 (`context.md` only) and T09 (generated
+   `fixtures/problem.md` only) never exposed grading material; their 0.1.2 records stand.
