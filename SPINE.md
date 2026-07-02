@@ -21,7 +21,7 @@ sha256 rather than embedding content.
 ## Run records are claims with provenance
 
 Each run record is written with `kind="claim"` and a `meta` envelope carrying `repo`
-(`aliomraniH/skill-transfer-experiment`), the `branch`/`repo_sha` the skill tree was synced from,
+(`aliomraniH/LLM-As-Memory`), the `branch`/`repo_sha` the skill tree was synced from,
 and `source_surface` (`claude-code-local` | `claude-code-web`). This makes every result
 machine-checkable: `coord_reconcile` can later verify the recorded skill tree still corresponds to
 a real commit, and a record whose provenance no longer resolves gets flagged instead of silently

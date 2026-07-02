@@ -4,7 +4,7 @@ title: Record a verifiable claim with provenance and confirm it reconciles curre
 category: procedural
 expected_transfer: high
 prompt: |
-  A fix for issue #<N> was merged to main in repo <REPO> (details in fixtures/context.md).
+  The fact described in fixtures/context.md occurred in the named repository.
   Durably record this fact in namespace dev/skill-transfer-tasks such that it is
   machine-verifiable, then verify it and report the verification verdict.
 skills_in_scope:

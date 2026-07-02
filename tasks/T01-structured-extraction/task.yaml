@@ -19,4 +19,21 @@ deterministic_graders:
 referee_dimensions: []
 reps: 5
 max_output_tokens: 4000
-leakage_forbidden_strings: []   # populate from fixtures/expected.json values before first run
+leakage_forbidden_strings:
+  - "Aurora Hypothetical Medical Group"
+  - "Examplopril"
+  - "F. Imaginary"
+  - "Fakestatin"
+  - "Fictionella Kranz"
+  - "Glucofake"
+  - "Mockingbird Simulation Health"
+  - "Placebozide"
+  - "Pretendogrel"
+  - "Q. Notreal"
+  - "TESTPATIENT, BRAVO"
+  - "TESTPATIENT, LUMEN"
+  - "TESTPATIENT, QUORRA"
+  - "Zephyr Valley Test Clinic"
+  - "new-onset synthetic chest pain, cardiology eval requested"
+  - "suspected synthetic type 2 diabetes, inadequate control"
+  - "uncontrolled hypertension despite two agents"

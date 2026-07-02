@@ -1,0 +1,25 @@
+experiment: skill-transfer-v1
+namespace: dev/skill-transfer
+repo: aliomraniH/LLM-As-Memory
+
+models:
+  orchestrator: "RECORD_PER_BATCH"     # record exact frontier model string per batch (context.json)
+  edge: "claude-opus-4-8"
+  referee: "TODO-pin-snapshot"          # harness refuses referee cells until a dated gpt-5.5 snapshot is pinned
+  agreement_judge: "TODO-pin-snapshot"  # third-family frontier, pinned
+
+arms: [orch_bare, orch_skill, edge_bare, edge_skill]
+
+referee:
+  temperature: 0
+  agreement_sample_rate: 0.20
+  kappa_floor: 0.4
+
+spine:
+  endpoint: https://mcp-assist-memory.replit.app/mcp
+  journal_path: .runs/journal.ndjson
+  replay_max_attempts: 10
+  replay_backoff_seconds: 30
+
+budget:
+  max_total_runs: 200

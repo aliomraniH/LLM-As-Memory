@@ -1,0 +1,43 @@
+[
+  {
+    "patient_name": "TESTPATIENT, QUORRA",
+    "date_of_birth": "1990-11-30",
+    "referral_date": "2026-03-04",
+    "referring_provider": "Fictionella Kranz",
+    "referring_organization": "Zephyr Valley Test Clinic",
+    "referral_reason_code": "HTN-UNCTRL",
+    "referral_reason_text": "uncontrolled hypertension despite two agents",
+    "urgency": "routine",
+    "medications": [
+      { "name": "Examplopril", "dose_value": 10, "dose_unit": "mg", "route": "oral", "frequency": "daily" },
+      { "name": "Placebozide", "dose_value": 25, "dose_unit": "mg", "route": "oral", "frequency": "daily" }
+    ]
+  },
+  {
+    "patient_name": "TESTPATIENT, BRAVO",
+    "date_of_birth": "1985-11-02",
+    "referral_date": "2026-02-17",
+    "referring_provider": "F. Imaginary",
+    "referring_organization": "Mockingbird Simulation Health",
+    "referral_reason_code": "CP-NEW",
+    "referral_reason_text": "new-onset synthetic chest pain, cardiology eval requested",
+    "urgency": "urgent",
+    "medications": [
+      { "name": "Fakestatin", "dose_value": 40, "dose_unit": "mg", "route": "oral", "frequency": "nightly" },
+      { "name": "Pretendogrel", "dose_value": 75, "dose_unit": "mg", "route": "oral", "frequency": "daily" }
+    ]
+  },
+  {
+    "patient_name": "TESTPATIENT, LUMEN",
+    "date_of_birth": "1972-06-12",
+    "referral_date": "2026-01-09",
+    "referring_provider": "Q. Notreal",
+    "referring_organization": "Aurora Hypothetical Medical Group",
+    "referral_reason_code": "DM2-UNCTRL",
+    "referral_reason_text": "suspected synthetic type 2 diabetes, inadequate control",
+    "urgency": "semi-urgent",
+    "medications": [
+      { "name": "Glucofake", "dose_value": 500, "dose_unit": "mg", "route": "oral", "frequency": "twice daily" }
+    ]
+  }
+]
