@@ -8,6 +8,8 @@ import hashlib, json, random, sys, pathlib
 def main() -> int:
     run_id, out_dir = sys.argv[1], pathlib.Path(sys.argv[2])
     out_dir.mkdir(parents=True, exist_ok=True)
+    fixtures_dir = out_dir / "fixtures"       # only model-facing inputs live here
+    fixtures_dir.mkdir(exist_ok=True)
     seed = int(hashlib.sha256(run_id.encode()).hexdigest(), 16) % (2**32)
     rng = random.Random(seed)
     n_meet, n_slot, cap = 8, 5, 2
@@ -34,7 +36,7 @@ def main() -> int:
             cons.append({"type": "not_same_slot", "a": a, "b": b})
     inst = {"run_id": run_id, "meetings": names, "slots": list(range(n_slot)),
             "slot_capacity": cap, "constraints": cons}
-    (out_dir / "instance.json").write_text(json.dumps(inst, indent=2))
+    (out_dir / "instance.json").write_text(json.dumps(inst, indent=2))  # grader ground truth — NOT a model input
     lines = [f"# Scheduling problem (instance {run_id[:8]})", "",
              f"Assign each of {n_meet} meetings ({', '.join(names)}) to one of {n_slot} time slots",
              f"(numbered 0-{n_slot-1}). At most {cap} meetings per slot.", "", "Constraints:"]
@@ -46,8 +48,8 @@ def main() -> int:
         else:
             lines.append(f"- {c['a']} and {c['b']} must not share a slot.")
     lines += ["", 'Output JSON only: {"assignment": {"M1": <slot>, ...}}']
-    (out_dir / "problem.md").write_text("\n".join(lines))
-    print(str(out_dir / "problem.md"))
+    (fixtures_dir / "problem.md").write_text("\n".join(lines))
+    print(str(fixtures_dir / "problem.md"))
     return 0
 
 if __name__ == "__main__":

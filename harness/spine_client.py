@@ -13,8 +13,9 @@ Known failure modes (SPINE.md): -32600 "Session terminated" => wake/restart the 
 import json, os, pathlib, time, urllib.error, urllib.request, uuid
 
 ENDPOINT = "https://mcp-assist-memory.replit.app/mcp"
-JOURNAL = pathlib.Path(".runs/journal.ndjson")
-ENV_FILE = pathlib.Path("settings/spine.env")
+_REPO = pathlib.Path(__file__).resolve().parents[1]
+JOURNAL = _REPO / ".runs" / "journal.ndjson"
+ENV_FILE = _REPO / "settings" / "spine.env"
 
 
 def _auth_token():

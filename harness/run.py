@@ -10,7 +10,7 @@ import jsonschema, yaml
 from spine_client import SpineClient, SpineUnavailable
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-HARNESS_VERSION = "0.1.1"
+HARNESS_VERSION = "0.1.2"
 NOW = lambda: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
 
@@ -65,6 +65,7 @@ def launch_edge(cfg: dict, task: dict, task_dir: pathlib.Path, out_path: pathlib
         if (task_dir / "fixtures").exists() else "(generated per rep — see problem.md path above)"
     prompt = (prompt_tpl.replace("{task_prompt}", task["prompt"])
               .replace("{fixture_paths}", fixtures)
+              .replace("{run_id}", run_id)
               .replace("{output_path}", str(out_path))
               .replace("{max_output_tokens}", str(task["max_output_tokens"])))
     env = dict(**__import__("os").environ, SKILL_ARM="1" if skill_arm else "0",
@@ -152,17 +153,19 @@ def main() -> int:
     scores = {}
     if status == "completed":
         for g in task.get("deterministic_graders", []):
-            cmd = g["cmd"].replace("{output_path}", str(out_path))
+            cmd = (g["cmd"].replace("{output_path}", str(out_path))
+                   .replace("{run_id}", run_id))
             if instance_path:
                 cmd = cmd.replace("{instance_path}", str(instance_path))
             parts = cmd.split()
             if parts and parts[0] == "python":  # grader cmds say "python"; use this interpreter
                 parts[0] = sys.executable
             r = subprocess.run(parts, cwd=task_dir, capture_output=True, text=True)
-            try:
+            try:  # fail closed: a grader that crashes or emits non-float is a malfunction, not a 0.0
                 scores[g["name"]] = float(r.stdout.strip().splitlines()[-1])
             except Exception:
-                scores[g["name"]] = 0.0
+                sys.exit(f"grader {g['name']} crashed (exit {r.returncode}) — run INVALID, re-run it."
+                         f"\nstdout: {r.stdout[-500:]}\nstderr: {r.stderr[-500:]}")
 
     # compliance (written by Stop hook; default zeros for bare/headless)
     comp = {"skill_steps_total": 0, "skill_steps_executed": 0, "hook_gate_triggers": 0}

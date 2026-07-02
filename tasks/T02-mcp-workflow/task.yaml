@@ -1,5 +1,5 @@
 task_id: T02
-version: "1.0"
+version: "1.1"
 title: Record a verifiable claim with provenance and confirm it reconciles current
 category: procedural
 expected_transfer: high
@@ -13,7 +13,7 @@ tools_in_scope:
   - MCP_Assist
 deterministic_graders:
   - name: postcondition
-    cmd: "python graders/check_spine.py"   # reads back: kind=claim, meta has repo+pr+sha, reconcile verdict current
+    cmd: "python graders/check_spine.py {run_id}"   # reads back: kind=claim, meta has repo+pr+sha, reconcile verdict current
 referee_dimensions: []
 reps: 5
 max_output_tokens: 3000
