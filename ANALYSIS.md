@@ -202,3 +202,20 @@ exposes a genuine orchestrator→edge capability gap.
 - a possible **v2** — a haiku-class edge model and/or a T01b "conventions-handbook" task that puts
   the naming/enum conventions in-scope — but only as a **fresh pre-registration, never a retrofit**
   of skill-transfer-v1.
+
+## Cross-family audit of the v1 report (post-hoc, no findings retrofitted)
+
+On **2026-07-02** an adversarial, evidence-only audit of the standalone v1 final report was run by a
+different model family — **GPT-5.5 (`gpt-5.5-2026-04-23`, temperature 0)** — because the report was
+authored by `claude-fable-5`, which was also the measured orchestrator arm (disclosed conflict of
+interest). The auditor credited only ground truth (this file, EXPERIMENT.md, the 40 baseline records
+read back live from the spine, git log, harness-version history); the report was not allowed to
+corroborate itself. Fail-closed structured output covering all 39 extracted claims + H1–H7 validated
+on the first attempt. Full review: **`reviews/gpt55-audit-v1.md`** (raw JSON `reviews/gpt55-audit-v1.json`).
+Verdicts: **16 SUPPORTED / 18 OVERCLAIMED / 0 UNSUPPORTED / 5 UNVERIFIABLE-FROM-EVIDENCE.**
+Harshest verdict: the core measured result (no fable-5→opus-4-8 gap; T01 double-floor, T02 inversion,
+T09 double-ceiling) is **SUPPORTED**, but the report's headline *narrative* is **OVERCLAIMED** — the
+T02 inversion's attribution to a "provenance judgment style" (which sha was pinned), its "17–28
+tool-use turns", and the benchmark-rank generalization are narrated, not decidable from the run records;
+and the auditor flags that T01 and T09 cross-arm comparisons mix harness versions (edge vs orch) while
+only T02 is homogeneous (both 0.1.6), with small n (5/5/10) and no statistical test.
