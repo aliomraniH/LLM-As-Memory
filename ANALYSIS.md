@@ -169,3 +169,36 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
     genuine orch_bare reps and the 1 genuine edge_bare rep (multi-minute, 20-30 turns, is_error
     false) already collected under 0.1.6 stand. edge_bare reps 2-5 are INVALID and re-run (spaced,
     with cooldown) to avoid the rate limit.
+
+## Outcome
+
+**skill-transfer-v1 concludes null by precondition.** The measured baselines (A1 orchestrator =
+`claude-fable-5` vs A3 edge = `claude-opus-4-8`, 20 acknowledged reps per arm) never produced the
+transfer-shaped gap the pre-registered hypothesis requires:
+
+- **T01** (intake-conventions) — **0.0 / 0.0 on both arms** (schema_valid / field_accuracy): a
+  double floor. Neither arm clears the local flat-schema + reason-code enum that lives only in
+  grader material (see #9), so there are *no successful A1 traces* to distill — the distillation
+  protocol (EXPERIMENT.md §3) therefore permits no skill to be authored for T01.
+- **T02** (record-a-verifiable-claim) — **orchestrator 0.80 vs edge 1.0** (mean postcondition,
+  n=5 each). The edge model sits *above* the orchestrator, so the gap_closure denominator
+  (edge − orchestrator headroom) is **negative**: there is no orchestrator advantage for a skill
+  to transfer downward. (The pre-registered A3 floor of 0.867 was an artifact of the pre-0.1.6
+  event_id-collision bug that persisted only 3/5 edge records; the clean re-collection is 1.0.)
+- **T09** (constraint-solver control) — **1.0 / 1.0 on both arms**: the control is saturated, so
+  its prediction is trivially satisfied and carries no discriminating signal.
+
+Across all three tasks the arms are either tied at a floor/ceiling or the edge model already leads;
+none exhibits the "orchestrator succeeds where the edge model fails" precondition. **The
+pre-registered hypothesis was never reached and remains open** — it needs a task pairing that
+exposes a genuine orchestrator→edge capability gap.
+
+**Reusable assets (carried forward, not retrofitted):**
+- the **v0.1.6 harness** — arm-parity launch path, three fail-closed integrity fixes (event_id
+  collision, `isError` surfacing, `artifact_put` upload) and the API-error abort;
+- **fable-5's two perfect T02 traces** (`run/T02/orch_bare/2` = 09d9df3a, `.../5` = 73210209,
+  postcondition 1.0) — distillation-ready if a future pairing needs them;
+- the **pinned but dormant referee** `gpt-5.5-2026-04-23` (no referee cells were ever run);
+- a possible **v2** — a haiku-class edge model and/or a T01b "conventions-handbook" task that puts
+  the naming/enum conventions in-scope — but only as a **fresh pre-registration, never a retrofit**
+  of skill-transfer-v1.
