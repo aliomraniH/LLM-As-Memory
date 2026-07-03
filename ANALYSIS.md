@@ -158,3 +158,14 @@ Pre-registration commit: `0a05846beb85a91fe5bf3c0acde275c951e73d79` on `main`
     `output_artifact_sha256` is now a real, retrievable content address for both re-run T02 arms
     (parity preserved between the compared A1/A3 T02 cells); the retained T01/T09 0.1.4 records keep
     their historical `null` (provenance-only field, not a scored metric).
+14. **Third integrity gap: an API-errored launch was scored as a 0.0 (harness 0.1.6, guard added).**
+    During the T02 re-collection, edge_bare reps 2-5 (`claude-opus-4-8`) hit HTTP 429 rate limits:
+    the CLI returned `is_error=true, api_error_status=429` in <1-5s with 1-3 turns, the model did no
+    work, and the empty output graded as `postcondition=0.0`. The launch path never inspected the
+    CLI result's `is_error`/`api_error_status`, so these non-runs were recorded as `completed`
+    measurements. Fix: `run.py` now aborts (sys.exit, no record, no score — same discipline as a
+    grader crash) when the CLI result carries `is_error` or `api_error_status`. This does not change
+    what any *successful* run records, so it is a same-version (0.1.6) integrity addition; the 5
+    genuine orch_bare reps and the 1 genuine edge_bare rep (multi-minute, 20-30 turns, is_error
+    false) already collected under 0.1.6 stand. edge_bare reps 2-5 are INVALID and re-run (spaced,
+    with cooldown) to avoid the rate limit.

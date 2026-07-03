@@ -136,6 +136,18 @@ def main() -> int:
                                 else (ROOT / ".runs" / "instances" / run_id), out_path,
                                 skill_arm, run_id, pinned)
 
+    # fail closed on a CLI/transport error (e.g. HTTP 429 rate limit): a run the model never
+    # actually executed must not be scored or recorded as a measurement — otherwise the empty
+    # output grades as a spurious 0.0. Mirror the grader-crash discipline: abort, do not record.
+    try:
+        cli_meta = json.loads(raw)
+    except Exception:
+        cli_meta = {}
+    if cli_meta.get("is_error") or cli_meta.get("api_error_status"):
+        sys.exit(f"launch errored (is_error={cli_meta.get('is_error')}, "
+                 f"api_error_status={cli_meta.get('api_error_status')}, "
+                 f"subtype={cli_meta.get('subtype')}) — run INVALID, re-run it.")
+
     status = "completed"
     if observed != pinned:
         status = "aborted_model_mismatch"
